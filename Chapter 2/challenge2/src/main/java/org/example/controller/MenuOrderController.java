@@ -2,7 +2,6 @@ package org.example.controller;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.example.model.OrderItem;
 import org.example.service.MenuService;
 import org.example.repository.MenuRepository;
 import org.example.model.MenuItem;
@@ -10,7 +9,9 @@ import org.example.model.MenuItem;
 import java.io.*;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.IntStream;
 
 public class MenuOrderController {
     @Setter
@@ -22,48 +23,118 @@ public class MenuOrderController {
         MenuOrderController.setMenuService(menuService);
     }
 
-    //method showmenu, untuk menampilkan menu menggunakan array, memanggil object Menu dari class MenuItem
+    //method showmenu, menggunakan lambda ekspresion untuk looping menampilkan menu dari repository
     public static void showMenu() {
         List<MenuItem> menu = getMenuService().getMenu();
         System.out.println("Daftar Menu Makanan:");
 
-        for (int i = 0; i < menu.size(); i++) {
-            MenuItem menuItem = menu.get(i);
-            System.out.println((i + 1) + ". " + menuItem.getName() + " | Rp " + menuItem.getPrice());
-        }
+        IntStream.range(0, menu.size()).forEach(index -> { //membuat stream bilangan bulat dengan rentang indeks dari 0 hingga menu.size()
+            MenuItem item = menu.get(index); //mengambil menu sesuai index
+            System.out.println(index+1+". "+ item.getName()+"  |  "+"Rp"+item.getPrice());
+        });
+
         System.out.println("99. Pesan dan Bayar");
         System.out.println("0. untuk keluar aplikasi");
         processOrder();
     }
 
-    private static void konfirmasipembayaran() {
+    //method processOrder, untuk melakukan proses menambahkan menu yang dipilih ke order
+    public static void processOrder() {
+        List<MenuItem> menu = getMenuService().getMenu();
+        Scanner input = new Scanner(System.in);
+
+        try {
+            while (true) {
+                System.out.println();
+                System.out.print("Pilih =>");
+                int choice = input.nextInt();
+                if (choice == 0) {
+                    System.exit(0);
+                } else if (choice > 0 && choice <= menu.size()) {
+                    try {
+                        System.out.println("=====================");
+                        System.out.println("Berapa pesanan anda");
+                        System.out.println("=====================");
+                        MenuItem menuItem = menu.get(choice - 1);
+                        System.out.println(menuItem.getName() + " " + menuItem.getPrice());
+                        System.out.print("qty=> ");
+                        int qty = input.nextInt();
+                        Optional<MenuItem> selectedMenuItem = Optional.ofNullable(menuItem);//Jika menuItem tidak null, maka selectedMenuItem akan berisi nilai menuItem. Jika menuItem null, maka selectedMenuItem akan berisi Optional.empty().
+                        selectedMenuItem.ifPresent(item -> { //jika tidak null maka akan menjalankan :
+                            if (qty > 0) {
+                                getMenuService().addOrder(choice - 1, qty);
+                            } else {
+                                System.out.println("===========================");
+                                System.out.println("Minimal 1 Jumlah Pesanan!!!");
+                                System.out.println("===========================");
+                            }
+                        });
+                    } catch (Exception e) {
+                        System.out.println("===========================");
+                        System.out.println("Terjadi kesalahan saat menambahkan pesanan!");
+                        System.out.println("===========================");
+                    }
+                } else if (choice == 99) {
+                    konfirmasipembayaran();
+                } else {
+                    System.out.println("Pilihan anda : " + choice + " belum ada di menu, pilih menu lain!");
+                }
+            }
+        } catch (InputMismatchException ime) {
+            System.out.println("============================");
+            System.out.println("Mohon masukkan pilihan anda!");
+            System.out.println("============================");
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("(y) Untuk lanjut");
+        System.out.println("(n) Untuk keluar");
+        input.nextLine();
+        System.out.print("=> ");
+        String choice3 = input.nextLine();
+        if (choice3.equals("y")) {
+            showMenu();
+        } else if (choice3.equals("n")) {
+            System.exit(0);
+        } else {
+            System.out.println();
+        }
+    }
+
+
+    // Metode getMenuService() dan konfirmasipembayaran() harus diimplementasikan.
+    public static void konfirmasipembayaran() {
         System.out.println("===========================");
         System.out.println(" Konfirmasi dan Pembayaran ");
         System.out.println("===========================");
-        for (OrderItem order : getMenuService().getOrder()) { //menampilkan pesanan yang dipilih berupa nama menu, jumlah, dan harganya
+
+        getMenuService().getOrder().forEach(order -> {
             System.out.println(order.getMenuItem().getName() + "    " + order.getQty() + " Rp" + order.getsubPrice());
-        }
+        });
+
         System.out.println("----------------------------- +");
-        System.out.println("Total          " + getMenuService().totalQuantity() + " Rp" + getMenuService().totalPrice()); //mengambil total jumlah dan harga
+        System.out.println("Total          " + getMenuService().totalQuantity() + " Rp" + getMenuService().totalPrice());
         System.out.println("1. Konfirmasi dan Bayar");
         System.out.println("2. Kembali ke menu utama");
         System.out.println("0. Keluar aplikasi");
-        System.out.print("Pilihan=> "); //memasukkan inputan baru
+        System.out.print("Pilihan=> ");
+
+        Scanner input = new Scanner(System.in);
         int choice2 = input.nextInt();
 
-        if (choice2 == 1) { //jika pilihan 1 maka akan memanggil method struktext dan readtrukpembayaran
+        if (choice2 == 1) {
             System.out.println();
             System.out.println("Struk Pembayaran kamu sudah disimpan dalam struk-pembayaran.txt");
-            struktext(); //membuat struk sesuai pesanan
-            readstrukpembayaran(); //menampilkan struk yang sudah dibuat
-        } else if (choice2 == 2) { //jika pilihan 2 maka akan kembali ke menu utama
+            struktext();
+            readstrukpembayaran();
+        } else if (choice2 == 2) {
             showMenu();
-        } else if (choice2 == 0) { //jika piliihan 0 maka akan keluar dari program
+        } else if (choice2 == 0) {
             System.exit(0);
         }
     }
 
-    private static void struktext() {
+    public static void struktext(){
         try {
             FileWriter struk = new FileWriter("struk-pembayaran.txt");
             struk.write("=====================================\n");
@@ -73,9 +144,16 @@ public class MenuOrderController {
             struk.write("\n");
             struk.write("Dibawah ini adalah pesanan anda\n");
             struk.write("\n");
-            for (OrderItem order : getMenuService().getOrder()) { //menampilkan pesanan yang dipilih berupa nama menu, jumlah, dan harganya
-                struk.write(order.getMenuItem().getName() + "    " + order.getQty() + " Rp" + order.getsubPrice() + "\n");
-            }
+
+            // Menggunakan ekspresi lambda untuk menulis pesanan ke file
+            getMenuService().getOrder().forEach(order -> {
+                try {
+                    struk.write(order.getMenuItem().getName() + "    " + order.getQty() + " Rp" + order.getsubPrice() + "\n");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+
             struk.write("----------------------------- +\n");
             struk.write("Total           " + getMenuService().totalQuantity() + " Rp" + getMenuService().totalPrice()); //mengambil total jumlah dan harga
             struk.write("\n");
@@ -92,7 +170,6 @@ public class MenuOrderController {
         }
     }
 
-    //membaca file struk-pembayaran.txt dengan menggunakan filereader
     public static void readstrukpembayaran() {
         try {
             File file = new File("D:\\Kuliah\\sib binar\\Chapter 2\\challenge2\\struk-pembayaran.txt"); //lokasi file
@@ -112,7 +189,6 @@ public class MenuOrderController {
         }
     }
 
-
     public static void main(String[] args) {
         MenuRepository foodRepository = new MenuRepository();
         MenuService foodService = new MenuService(foodRepository);
@@ -126,57 +202,4 @@ public class MenuOrderController {
         showMenu();
         processOrder();
     }
-
-    //method processOrder, untuk melakukan proses menambahkan menu yang dipilih ke order
-    public static void processOrder(){
-        List<MenuItem> menu = getMenuService().getMenu();
-        try {
-            while (true) {
-                System.out.println();
-                System.out.print("Pilih =>");
-                int choice = input.nextInt();
-                if (choice == 0) { //jika pilihan 0 maka akan mengakhiri program dan keluar dari program
-                    System.exit(0);
-                } else if (choice > 0 && choice <= menu.size()) { //jika pilihan 1-jumlah menu, maka akan menampilkan detail menu dan harganya
-                    try { //exception handling
-                        System.out.println("=====================");
-                        System.out.println("Berapa pesanan anda");
-                        System.out.println("=====================");
-                        System.out.println(menu.get(choice - 1).getName() + " " + menu.get(choice - 1).getPrice());  //menu dan harga
-                        System.out.print("qty=> ");
-                        int qty = input.nextInt();
-                        getMenuService().addOrder(choice - 1, qty);//menambahkan menu yang dipilih dan jumlahnya kedalam class pesanan
-                        if (qty <= 0) {
-                            throw new Exception(); //jika jumlah <=0 maka akan error dan dilempar ke exception
-                        }
-                    } catch (Exception e) { //menangkap exception
-                        System.out.println("===========================");
-                        System.out.println("Minimal 1 Jumlah Pesanan!!!");
-                        System.out.println("===========================");
-                    }
-                } else if (choice == 99) { //jika pilihan 99 maka akan memanggil method konfirmasi pembayaran
-                    konfirmasipembayaran();
-                } else { //input diatas angka 5
-                    System.out.println("Pilihan anda : "+choice+" belum ada di menu, pilih menu lain!");
-                }
-            }
-        } catch (InputMismatchException ime) { //menangkap exception jika inputan bukan nilai positif atau integer
-            System.out.println("============================");
-            System.out.println("Mohon masukkan pilihan anda!");
-            System.out.println("============================");
-        }
-        System.out.println("(y) Untuk lanjut");
-        System.out.println("(n) Untuk keluar");
-        input.nextLine();
-            System.out.print("=> ");
-            String choice3 = input.nextLine();
-            if (choice3.equals("y")) {
-                showMenu();
-            } else if (choice3.equals("n")) {
-                System.exit(0);
-            } else {
-                System.out.println();
-            }
-        }
-
 }
