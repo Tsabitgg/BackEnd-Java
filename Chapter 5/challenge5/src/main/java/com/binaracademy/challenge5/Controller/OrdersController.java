@@ -61,7 +61,7 @@ public class OrdersController {
         OrdersResponse ordersResponse = new OrdersResponse();
         ordersResponse.setOrderId(orders.getOrderId());
         ordersResponse.setOrderTime(orders.getOrderTime());
-        ordersResponse.setUsersId(orders.getUsers().getUsersId());
+        ordersResponse.setUserId(orders.getUser().getUserId());
         ordersResponse.setDestinationAddress(orders.getDestinationAddress());
         ordersResponse.setCompleted(orders.isCompleted());
         // Set properti lain sesuai kebutuhan

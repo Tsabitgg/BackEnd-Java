@@ -15,6 +15,6 @@ public class OrdersResponse {
     private Long orderId;
     private Date orderTime;
     private String destinationAddress;
-    private Long usersId;
+    private Long userId;
     private boolean completed;
 }

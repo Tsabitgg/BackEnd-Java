@@ -47,7 +47,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     public String exportReport(String reportFormat) throws FileNotFoundException, JRException {
-        String path = "D:\\Kuliah\\sib binar\\Chapter 4\\challenge4\\target";
+        String path = "D:\\Kuliah\\sib binar\\Chapter 5\\challenge5\\target";
 
         List<OrdersDetail> ordersDetail =  ordersDetailRepository.findAll();
 

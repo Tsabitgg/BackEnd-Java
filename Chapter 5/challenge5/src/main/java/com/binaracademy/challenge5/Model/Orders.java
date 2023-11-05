@@ -27,8 +27,8 @@ public class Orders {
     private String destinationAddress;
 
     @ManyToOne
-    @JoinColumn(name = "users_id", referencedColumnName = "usersId")
-    public Users users;
+    @JoinColumn(name = "users_id", referencedColumnName = "userId")
+    public User user;
 
     @Column
     private boolean completed;
