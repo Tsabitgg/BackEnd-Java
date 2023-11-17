@@ -45,10 +45,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
                 .authorizeRequests()
                 .antMatchers("/**", "/api/auth/**", "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/webjars/**", "/error").permitAll( )
-                .antMatchers("/api/merchant/**").hasAuthority(ERole.ROLE_MERCHANT.name())
-                .antMatchers("/api/product/**").hasAuthority(ERole.ROLE_MERCHANT.name())
-                .antMatchers("/api/user/**").hasAuthority(ERole.ROLE_CUSTOMER.name())
-                .antMatchers("/api/orders/**").hasAuthority(ERole.ROLE_CUSTOMER.name())
+ //               .antMatchers("/api/merchant/**").hasAuthority(ERole.ROLE_MERCHANT.name())
+ //               .antMatchers("/api/product/**").hasAuthority(ERole.ROLE_MERCHANT.name())
+ //               .antMatchers("/api/user/**").hasAuthority(ERole.ROLE_CUSTOMER.name())
+ //               .antMatchers("/api/orders/**").hasAuthority(ERole.ROLE_CUSTOMER.name())
                 .anyRequest()
                 .authenticated()
                 .and()
@@ -59,8 +59,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     };
                 })
                 .and()
-                .csrf(c -> c
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+//                .csrf(c -> c
+//                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .logout(l -> l.logoutSuccessUrl("/"));
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
     }

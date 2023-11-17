@@ -4,6 +4,7 @@ import com.binaracademy.challenge6.Model.Product;
 import com.binaracademy.challenge6.Repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -15,11 +16,13 @@ public class ProductServiceImpl implements ProductService {
     ProductRepository productRepository;
 
 
+    @Transactional
     @Override
     public Product addProduct(Product product) {
         return productRepository.save(product);
     }
 
+    @Transactional
     @Override
     public Product updateProduct(Long productCode, Product product) throws Exception {      //sama seperti updatemerchantstatus
         Optional<Product> existingProduct = productRepository.findById(productCode);
@@ -34,6 +37,7 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    @Transactional
     @Override
     public void deleteProduct(Long productCode) throws Exception {
         Optional<Product> product = productRepository.findById(productCode);
@@ -45,6 +49,7 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Product> getAllProducts() {
         return productRepository.findAll();

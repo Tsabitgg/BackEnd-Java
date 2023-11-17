@@ -14,6 +14,6 @@ public interface OrdersService {
     List<Orders> getAllOrders();
 
     List<OrdersDetail> getAllOrdersDetail();
-
+    void deleteOrders(Long orderId) throws Exception;
     String exportReport(String reportFormat) throws FileNotFoundException, JRException;
 }

@@ -9,5 +9,4 @@ public interface MerchantService {
     Merchant updateMerchantStatus(Long merchantCode, boolean open) throws Exception;
     List<Merchant> getAllMerchants();
     List<Merchant> getOpenMerchants();
-
 }

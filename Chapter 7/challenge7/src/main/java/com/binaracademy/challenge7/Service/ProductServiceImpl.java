@@ -1,0 +1,58 @@
+package com.binaracademy.challenge7.Service;
+
+import com.binaracademy.challenge7.Model.Product;
+import com.binaracademy.challenge7.Repository.ProductRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class ProductServiceImpl implements ProductService {
+
+    @Autowired
+    ProductRepository productRepository;
+
+
+    @Transactional
+    @Override
+    public Product addProduct(Product product) {
+        return productRepository.save(product);
+    }
+
+    @Transactional
+    @Override
+    public Product updateProduct(Long productCode, Product product) throws Exception {      //sama seperti updatemerchantstatus
+        Optional<Product> existingProduct = productRepository.findById(productCode);
+
+        if (existingProduct.isPresent()) {
+            Product updatedProduct = existingProduct.get();
+            updatedProduct.setProductName(product.getProductName());
+            updatedProduct.setPrice(product.getPrice());
+            return productRepository.save(updatedProduct);
+        } else {
+            throw new Exception("Product with code " + productCode + " not found");
+        }
+    }
+
+    @Transactional
+    @Override
+    public void deleteProduct(Long productCode) throws Exception {
+        Optional<Product> product = productRepository.findById(productCode);
+
+        if (product.isPresent()) {
+            productRepository.delete(product.get());
+        } else {
+            throw new Exception("Product with code " + productCode + " not found");
+        }
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<Product> getAllProducts() {
+        return productRepository.findAll();
+    }
+}
+

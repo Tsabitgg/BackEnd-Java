@@ -2,12 +2,15 @@ package com.binaracademy.challenge6.Service;
 
 import com.binaracademy.challenge6.Model.Orders;
 import com.binaracademy.challenge6.Model.OrdersDetail;
+import com.binaracademy.challenge6.Model.Product;
 import com.binaracademy.challenge6.Repository.OrdersDetailRepository;
 import com.binaracademy.challenge6.Repository.OrdersRepository;
 import net.sf.jasperreports.engine.*;
 import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ResourceUtils;
 
 import java.io.File;
@@ -15,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class OrdersServiceImpl implements OrdersService {
@@ -25,26 +29,53 @@ public class OrdersServiceImpl implements OrdersService {
     OrdersDetailRepository ordersDetailRepository;
 
 
+    @Transactional
     @Override
     public Orders addNewOrders(Orders orders) {
         return ordersRepository.save(orders);
     }
 
+    @Transactional
     @Override
     public OrdersDetail addnewOrdersDetail(OrdersDetail ordersDetail) {
         return ordersDetailRepository.save(ordersDetail);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<Orders> getAllOrders() {
         return ordersRepository.findAll();
     }
 
+    @Transactional(readOnly = true)
     @Override
     public List<OrdersDetail> getAllOrdersDetail() {
         return ordersDetailRepository.findAll();
     }
 
+    @Override
+    public void deleteOrders(Long orderId) throws Exception {
+        Optional<Orders> orders = ordersRepository.findById(orderId);
+
+        if (orders.isPresent()) {
+            ordersRepository.delete(orders.get());
+        } else {
+            throw new Exception("Product with code " + orderId + " not found");
+        }
+    }
+
+    //schedular
+    @Scheduled(cron = "0 0 0 * * ?") //dijalankan setiap hari pukul 00:00:00
+    public void scheduledDeleteOrders() {
+        try {
+            //menghapus orderId 1
+            deleteOrders(1L);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Transactional
     @Override
     public String exportReport(String reportFormat) throws FileNotFoundException, JRException {
         String path = "D:\\Kuliah\\sib binar\\Chapter 6\\challenge6\\target";
